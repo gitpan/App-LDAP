@@ -9,7 +9,7 @@ inc/Module/Install/Fetch.pm
 inc/Module/Install/Include.pm
 inc/Module/Install/Makefile.pm
 inc/Module/Install/Metadata.pm
-inc/Module/Install/Repository.pm
+inc/Module/Install/Scripts.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 inc/Test/More.pm
@@ -19,7 +19,10 @@ lib/App/LDAP/Command/Add.pm
 lib/App/LDAP/Command/Add/User.pm
 lib/App/LDAP/Command/Del.pm
 lib/App/LDAP/Command/Del/User.pm
+lib/App/LDAP/Command/Help.pm
+lib/App/LDAP/Command/Import.pm
 lib/App/LDAP/Command/Passwd.pm
+lib/App/LDAP/Config.pm
 Makefile.PL
 MANIFEST			This list of files
 META.yml

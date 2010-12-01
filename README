@@ -47,4 +47,8 @@ USAGE
     $ ldap add sudoer shelling       # set shelling as SUDOer
                                      # the ldap should have schema of SUDOers
 
+    $ ldap ls /                      # show subnodes of root DN
+
+    $ ldap import blah.ldif          # add content of blah.ldif into DB of ldap server
+
 shelling
