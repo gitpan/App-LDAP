@@ -5,7 +5,7 @@ use warnings;
 package App::LDAP;
 use strict;
 use warnings;
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 
 use Rubyish::Attribute;
 
@@ -82,7 +82,8 @@ shelling E<lt>navyblueshellingford@gmail.comE<gt>
 
 =head1 LICENSE
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself.
+Copyright (C) shelling
+
+MIT
 
 =cut

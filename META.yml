@@ -9,7 +9,7 @@ configure_requires:
   ExtUtils::MakeMaker: 6.42
 distribution_type: module
 generated_by: 'Module::Install version 1.00'
-license: gpl
+license: mit
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
   version: 1.4
@@ -26,6 +26,6 @@ requires:
   Term::ReadPassword: 0
   perl: 5.10.0
 resources:
-  license: http://opensource.org/licenses/gpl-license.php
+  license: http://opensource.org/licenses/mit-license.php
   repository: http://github.com/shelling/app-ldap
-version: 0.02
+version: 0.03
