@@ -5,7 +5,7 @@ use warnings;
 package App::LDAP;
 use strict;
 use warnings;
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 use Rubyish::Attribute;
 
@@ -49,7 +49,7 @@ sub connect {
     my $userdn = $ldap->search( base => $base, scope => $scope, filter => "uidNumber=$<")
                       ->entry(0)
                       ->dn;
-    my $userpw = read_password("password: ");
+    my $userpw = read_password("your password: ");
     $ldap->bind($userdn, password => $userpw);
   }
   say "bind as ", $ldap->who_am_i->response;

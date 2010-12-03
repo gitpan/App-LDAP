@@ -21,6 +21,8 @@ no_index:
     - xt
 requires:
   App::CLI: 0
+  Authen::SASL: 0
+  Digest::MD5: 0
   Net::LDAP: 0
   Rubyish::Attribute: 0
   Term::ReadPassword: 0
@@ -28,4 +30,4 @@ requires:
 resources:
   license: http://opensource.org/licenses/mit-license.php
   repository: http://github.com/shelling/app-ldap
-version: 0.03
+version: 0.04
