@@ -1,4 +1,4 @@
-package App::LDAP::Command::Add::Sudoer;
+package App::LDAP::Command::Migrate::Host;
 
 use Modern::Perl;
 
