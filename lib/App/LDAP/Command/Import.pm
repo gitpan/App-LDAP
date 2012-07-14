@@ -10,23 +10,47 @@ with 'MooseX::Getopt';
 
 use Net::LDAP::LDIF;
 
+use App::LDAP::Utils;
+
 sub run {
-  my ($self) = @_;
-  for (@ARGV) {
-    (-f $_) ? $self->process($_) : say "$_ don\'t exist. skip.";
-  }
+    my ($self) = shift;
+
+    shift @ARGV;
+    process($_) for @ARGV;
 }
 
 sub process {
-  my ($self, $file) = @_;
-  say "import $file...";
-  my $LDAP = $self->{app_info}->connection;
-  my $LDIF = Net::LDAP::LDIF->new($file, "r", onerror => 'die');
-  while (!$LDIF->eof) {
-    my $entry = $LDIF->read_entry;
-    my $msg = $LDAP->add($entry);
-    warn $msg->error() if $msg->code;
-  }
+    my ($file) = @_;
+
+    if (-f $file) {
+
+        say "import $file...";
+
+        my $ldif = Net::LDAP::LDIF->new($file, "r", onerror => 'die');
+
+        while (!$ldif->eof) {
+            my $entry = $ldif->read_entry;
+            my $msg = ldap->add($entry);
+            warn $msg->error() if $msg->code;
+        }
+
+    } else {
+        say "$_ don\'t exist. skip.";
+        return;
+    }
+
 }
 
 1;
+
+=pod
+
+=head1 NAME
+
+App::LDAP::Command::Import
+
+=head1 SYNOPSIS
+
+    $ ldap import people.ldif
+
+=cut

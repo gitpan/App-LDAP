@@ -1,5 +1,5 @@
 ---
-abstract: ~
+abstract: 'CLI tool providing common manipulation on LDAP servers'
 author:
   - 'shelling <navyblueshellingford@gmail.com>'
   - 'shelling <navyblueshellingford@gmail.com>'
@@ -26,11 +26,13 @@ requires:
   Modern::Perl: 0
   Moose: 0
   MooseX::Getopt: 0
+  MooseX::Singleton: 0
   Namespace::Dispatch: 0
   Net::LDAP: 0
+  Term::Prompt: 0
   Term::ReadPassword: 0
   perl: 5.10.0
 resources:
   license: http://opensource.org/licenses/mit-license.php
   repository: http://github.com/shelling/app-ldap
-version: 0.06
+version: 0.07

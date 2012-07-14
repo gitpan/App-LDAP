@@ -1,70 +1,58 @@
 package App::LDAP;
 
-our $VERSION = '0.06';
+our $VERSION = '0.07';
 
 use Modern::Perl;
 
 use Moose;
+use MooseX::Singleton;
 
-has config => (
-    is  => "rw",
-);
-
-has connection => (
-    is  => "rw",
-);
-
-use Net::LDAP;
 use Term::ReadPassword;
 
 use App::LDAP::Command;
 use App::LDAP::Config;
-use Net::LDAP::Extension::WhoAmI;
+use App::LDAP::Utils;
+use App::LDAP::Connection;
 
 sub run {
   my ($self,) = @_;
-  $self->config( App::LDAP::Config->read );
-  $self->connect;
-  my $command = App::LDAP::Command
-                  ->dispatch(@ARGV)
-                  ->new_with_options
-                  ->run($self);
-}
 
-sub connect {
-  my ($self) = @_;
-  $self->connection( $self->handshake() );
+  App::LDAP::Config->read;
+
+  $self->handshake;
+
   ($< == 0) ? $self->bindroot() : $self->binduser();
-  say "bind as ", $self->connection->who_am_i->response;
+
+  App::LDAP::Command
+      ->dispatch(@ARGV)
+      ->new_with_options
+      ->run();
 }
 
 sub bindroot {
   my ($self) = @_;
-  my $userdn = $self->config->{rootbinddn};
   my $userpw = read_password("ldap admin password: ");
-  $self->connection->bind($userdn, password => $userpw);
+  ldap->bind(
+      config->{rootbinddn},
+      password => $userpw
+  );
 }
 
 sub binduser {
   my ($self) = @_;
-  my ($base, $scope) = split /\?/, $self->config->{nss_base_passwd};
-  my $userdn = $self->connection
-                    ->search(base => $base, scope => $scope, filter => "uidNumber=$<")
-                    ->entry(0)
-                    ->dn;
+  my $userdn = find_user("uidNumber", $<)->dn;
   my $userpw = read_password("your password: ");
-  $self->connection->bind($userdn, password => $userpw);
+  ldap->bind($userdn, password => $userpw);
 }
 
 sub handshake {
-  my ($self,) = @_;
-  my $config = $self->config;
-  return Net::LDAP->new(
-    $config->{uri},
-    port       => $config->{port},
-    version    => $config->{ldap_version},
-    onerror    => 'die',
-  );
+    my ($self,) = @_;
+    App::LDAP::Connection->new(
+        config->{uri},
+        port       => config->{port},
+        version    => config->{ldap_version},
+        onerror    => 'die',
+    );
 }
 
 __PACKAGE__->meta->make_immutable;
@@ -75,15 +63,19 @@ __END__
 
 =head1 NAME
 
-App::LDAP -
+App::LDAP - CLI tool providing common manipulation on LDAP servers
 
 =head1 SYNOPSIS
 
-  use App::LDAP;
+    use App::LDAP;
+
+    App::LDAP->new->run;
 
 =head1 DESCRIPTION
 
-App::LDAP is
+App::LDAP is intent on providing client-side solution of
+L<RFC 2307|http://www.ietf.org/rfc/rfc2307.txt>,
+L<RFC 2798|http://www.ietf.org/rfc/rfc2798.txt>.
 
 =head1 AUTHOR
 
@@ -95,6 +87,6 @@ shelling E<lt>navyblueshellingford@gmail.comE<gt>
 
 Copyright (C) shelling
 
-MIT
+The MIT License
 
 =cut

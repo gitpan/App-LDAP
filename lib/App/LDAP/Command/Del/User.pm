@@ -8,24 +8,25 @@ use Moose;
 
 with 'MooseX::Getopt';
 
+use App::LDAP::Command::Del::Group;
+
+use App::LDAP::LDIF::User;
+
+use App::LDAP::Utils;
+
 sub run {
-  my ($self,) = @_;
-  my $user = $ARGV[0];
-  my $LDAP = $self->{app_info}->connection;
-  my ($base, $scope) = split /\?/, $self->{app_info}->config->{nss_base_passwd};
+    my ($self) = shift;
 
-  my $result = $LDAP->search(
-      base => $base,
-      scope => $scope,
-      filter => "cn=$user"
-  );
+    my $user   = $ARGV[2] or die "no username specified";
 
-  if ($result->count) {
-    $LDAP->delete($result->entry(0)->dn);
-    say "user $user has been delete";
-  } else {
-    say "user $user not found";
-  }
+    App::LDAP::LDIF::User->delete(
+        base   => config->{nss_base_passwd}->[0],
+        scope  => config->{nss_base_passwd}->[1],
+        filter => "uid=$user",
+    );
+
+    App::LDAP::Command::Del::Group->new->run;
+
 }
 
 __PACKAGE__->meta->make_immutable;

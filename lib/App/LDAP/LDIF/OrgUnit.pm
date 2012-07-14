@@ -2,7 +2,7 @@ package App::LDAP::LDIF::OrgUnit;
 
 use Moose;
 
-use Net::LDAP::Entry;
+with 'App::LDAP::LDIF';
 
 around BUILDARGS => sub {
     my $orig = shift;

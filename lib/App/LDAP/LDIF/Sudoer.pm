@@ -2,18 +2,18 @@ package App::LDAP::LDIF::Sudoer;
 
 use Moose;
 
-use Net::LDAP::Entry;
+with 'App::LDAP::LDIF';
 
 around BUILDARGS => sub {
     my $orig = shift;
     my $self = shift;
 
     my $args = {@_};
-    my $ou   = $args->{ou};
+    my $base = $args->{base};
     my $name = $args->{name};
 
     $self->$orig(
-        dn       => "cn=$name,$ou",
+        dn       => "cn=$name,$base",
         cn       => $name,
         sudoUser => $name,
     );

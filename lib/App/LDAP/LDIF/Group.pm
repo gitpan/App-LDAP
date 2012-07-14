@@ -2,19 +2,19 @@ package App::LDAP::LDIF::Group;
 
 use Moose;
 
-use Net::LDAP::Entry;
+with 'App::LDAP::LDIF';
 
 around BUILDARGS => sub {
     my $orig = shift;
     my $self = shift;
 
     my $args = {@_};
-    my $ou   = $args->{ou};
+    my $base = $args->{base};
     my $name = $args->{name};
     my $id   = $args->{id};
 
     $self->$orig(
-        dn        => "cn=$name,$ou",
+        dn        => "cn=$name,$base",
         cn        => $name,
         gidNumber => $id,
     );
@@ -85,7 +85,7 @@ App::LDAP::LDIF::Group - the representation of groups in LDAP
 =head1 SYNOPSIS
 
     my $group = App::LDAP::LDIF::Group->new(
-        ou   => $ou,              # The OU (organization unit) which the group belongs to
+        base => $base,            # The OU (organization unit) which the group belongs to
         name => $name,            # the group name
         id   => $id,              # the gid of the group
     );

@@ -2,19 +2,19 @@ package App::LDAP::LDIF::Host;
 
 use Moose;
 
-use Net::LDAP::Entry;
+with 'App::LDAP::LDIF';
 
 around BUILDARGS => sub {
     my $orig = shift;
     my $self = shift;
 
     my $args = {@_};
-    my $ou   = $args->{ou};
+    my $base = $args->{base};
     my $name = $args->{name};
     my $ip   = $args->{ip};
 
     $self->$orig(
-        dn           => "cn=$name,$ou",
+        dn           => "cn=$name,$base",
         cn           => $name,
         ipHostNumber => $ip,
     );
@@ -77,7 +77,7 @@ App::LDAP::LDIF::Host - the representation of hosts in LDAP
 =head1 SYNOPSIS
 
     my $host = App::LDAP::LDIF::Host->new(
-        ou   => $ou,             # the OU (organization unit) which the host belongs to
+        base => $base,           # the OU (organization unit) which the host belongs to
         name => $name,           # the host name
         ip   => $ip,             # the ip of this host
     );
