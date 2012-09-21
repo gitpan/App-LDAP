@@ -1,0 +1,28 @@
+dn: uid=trendmicro,ou=People,dc=ntucpel,dc=org
+uid: trendmicro
+cn: trendmicro
+cn: Trend Micro Inc.
+sn: Chang
+sn: Chen
+mail: trendmicro@trend.com.tw
+objectClass: inetOrgPerson
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+userPassword: {crypt}$6$PqFBTKAN$H9of7E7oITubjIQqWNIs3YrVkjVGgiUBzhWRc9G6EHvC1
+ VqVyHOJvf7nRoYeyCCVprZpH4otVQAHcxowOAmD91
+shadowLastChange: 11111
+shadowMax: 99999
+shadowWarning: 7
+loginShell: /bin/bash
+uidNumber: 1000
+gidNumber: 1000
+homeDirectory: /home/trendmicro
+
+dn: cn=trendmicro,ou=Group,dc=ntucpel,dc=org
+objectClass: posixGroup
+objectClass: top
+cn: trendmicro
+userPassword: {crypt}x
+gidNumber: 1000
+

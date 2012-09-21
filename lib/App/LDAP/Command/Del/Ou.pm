@@ -2,31 +2,30 @@ package App::LDAP::Command::Del::Ou;
 
 use Modern::Perl;
 
-use Namespace::Dispatch;
-
 use Moose;
 
-with 'MooseX::Getopt';
+with qw( App::LDAP::Role::Command
+         App::LDAP::Role::Bindable );
 
 has base => (
     is  => "rw",
     isa => "Str",
 );
 
-use App::LDAP::Utils;
 use App::LDAP::LDIF::OrgUnit;
 
 sub run {
     my ($self, ) = @_;
 
-    my $ou = $ARGV[2] or die "no organization name specified";
+    my $ouname = $self->extra_argv->[2] or die "no organization name specified";
 
-    App::LDAP::LDIF::OrgUnit->delete(
-        base   => config->{base},
-        scope  => config->{scope},
-        filter => "ou=$ou",
+    my $ou = App::LDAP::LDIF::OrgUnit->search(
+        base   => config()->{base},
+        scope  => config()->{scope},
+        filter => "ou=$ouname",
     );
 
+    $ou->delete;
 }
 
 1;

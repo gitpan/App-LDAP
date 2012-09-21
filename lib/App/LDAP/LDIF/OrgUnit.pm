@@ -1,51 +1,28 @@
 package App::LDAP::LDIF::OrgUnit;
 
+use Modern::Perl;
+
 use Moose;
 
-with 'App::LDAP::LDIF';
+extends qw(
+    App::LDAP::ObjectClass::OrganizationalUnit
+    App::LDAP::LDIF
+);
 
 around BUILDARGS => sub {
     my $orig = shift;
     my $self = shift;
-
-    my $args = {@_};
-    my $base = $args->{base};
-    my $name = $args->{name};
-
-    $self->$orig(
-        dn => "ou=$name,$base",
-        ou => $name,
-    );
-
+    push @_, ( dn => "ou=" .{@_}->{ou} ."," . {@_}->{base} ) if grep /^base$/, @_;
+    $self->$orig(@_);
 };
 
-has [qw(dn ou)] => (
-    is       => "rw",
-    isa      => "Str",
-    required => 1,
-);
-
-has objectClass => (
-    is      => "rw",
-    isa     => "ArrayRef[Str]",
+has '+objectClass' => (
     default => sub {
         [
             qw( organizationalUnit )
         ]
     },
 );
-
-sub entry {
-    my ($self) = shift;
-
-    my $entry = Net::LDAP::Entry->new( $self->dn );
-
-    $entry->add($_ => $self->$_)
-      for qw( ou
-              objectClass );
-
-    $entry;
-}
 
 __PACKAGE__->meta->make_immutable;
 no Moose;
@@ -63,8 +40,8 @@ App::LDAP::LDIF::OrgUnit - the representation of organization unit in LDAP
 =head1 SYNOPSIS
 
     my $ou = App::LDAP::LDIF::OrgUnit->new(
-        name => $name,
         base => $base,
+        ou   => $name,
     );
 
 =cut

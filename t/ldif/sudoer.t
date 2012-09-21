@@ -1,17 +1,42 @@
 use Modern::Perl;
 use Test::More;
 
-use App::LDAP::LDIF::Sudoer;
+BEGIN {
+    use_ok 'App::LDAP::LDIF::Sudoer';
+}
+
+is_deeply (
+    [sort map {$_->name} App::LDAP::LDIF::Sudoer->meta->get_all_attributes],
+    [sort qw( dn
+              objectClass
+
+              cn
+              sudoUser
+              sudoHost
+              sudoCommand
+              sudoRunAs
+              sudoRunAsUser
+              sudoRunAsGroup
+              sudoOption
+              description )],
+    "make sure attributes",
+);
+
+is_deeply (
+    [sort map {$_->name} grep {$_->is_required} App::LDAP::LDIF::Sudoer->meta->get_all_attributes],
+    [sort qw(dn objectClass cn sudoUser)],
+    "make sure required attributes",
+);
 
 my $sudoer = App::LDAP::LDIF::Sudoer->new(
-    base => "ou=Sudoer,dc=example,dc=com",
-    name => "first",
+    base     => "ou=Sudoer,dc=example,dc=com",
+    sudoUser => "first",
 );
 
 is (
     $sudoer->dn,
     "cn=first,ou=Sudoer,dc=example,dc=com",
-    "dn is composed of name and ou",
+    "dn is composed of sudoUser and ou",
 );
 
 is_deeply (
@@ -20,49 +45,60 @@ is_deeply (
     "objectClass has default value",
 );
 
-is (
+is_deeply (
     $sudoer->cn,
-    "first",
-    "cn is name",
+    ["first"],
+    "default cn is sudoUser",
 );
 
 is (
     $sudoer->sudoUser,
     "first",
-    "sudoUser is name",
+    "sudoUser is correct",
 );
 
-is (
+is_deeply (
     $sudoer->sudoHost,
-    "ALL",
+    ["ALL"],
     "sudoHost has default value ALL",
 );
 
-is (
+is_deeply (
     $sudoer->sudoRunAsUser,
-    "ALL",
+    ["ALL"],
     "sudoRunAsUser has default value ALL",
 );
 
-is (
+is_deeply (
     $sudoer->sudoCommand,
-    "ALL",
+    ["ALL"],
     "sudoCommand has default value ALL",
 );
 
-is (
+like (
     $sudoer->entry->ldif,
-<<LDIF
-
-dn: cn=first,ou=Sudoer,dc=example,dc=com
+    qr{
 objectClass: top
 objectClass: sudoRole
-cn: first
-sudoUser: first
+},
+    "objectClass has been exported",
+);
+
+use IO::String;
+
+my $ldif_string = IO::String->new(q{
+dn: cn=foo,ou=SUDOers,dc=example,dc=com
+objectClass: top
+objectClass: sudoRole
+cn: foo
+sudoUser: foo
 sudoHost: ALL
 sudoRunAsUser: ALL
 sudoCommand: ALL
-LDIF
-);
+});
+
+my $entry = Net::LDAP::LDIF->new($ldif_string, "r", onerror => "die")->read_entry;
+
+my $new_from_entry = App::LDAP::LDIF::Sudoer->new($entry);
 
 done_testing;

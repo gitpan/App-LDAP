@@ -2,11 +2,10 @@ package App::LDAP::Command::Add::Host;
 
 use Modern::Perl;
 
-use Namespace::Dispatch;
-
 use Moose;
 
-with 'MooseX::Getopt';
+with qw( App::LDAP::Role::Command
+         App::LDAP::Role::Bindable );
 
 has base => (
     is  => "rw",
@@ -15,23 +14,30 @@ has base => (
 
 use Term::Prompt;
 
-use App::LDAP::Utils;
 use App::LDAP::LDIF::Host;
 
 sub run {
     my ($self) = shift;
 
-    my $hostname = $ARGV[2] or die "no hostname specified";
+    my $hostname = $self->extra_argv->[2] or die "no hostname specified";
+
+    die "host $hostname already exists" if App::LDAP::LDIF::Host->search(
+        base   => config()->{nss_base_hosts}->[0],
+        scope  => config()->{nss_base_hosts}->[1],
+        filter => "cn=$hostname",
+    );
 
     my $ip = prompt('x', 'ip address:', '', '');
 
     my $host = App::LDAP::LDIF::Host->new(
-        base => $self->base // config->{nss_base_hosts}->[0],
-        name => $hostname,
-        ip   => $ip,
+        base         => $self->base // config()->{nss_base_hosts}->[0],
+        cn           => [$hostname],
+        ipHostNumber => $ip,
     );
 
     $host->save;
+
+    $host;
 }
 
 __PACKAGE__->meta->make_immutable;

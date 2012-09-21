@@ -1,58 +1,34 @@
 package App::LDAP;
 
-our $VERSION = '0.07';
+our $VERSION = '0.1.0';
 
 use Modern::Perl;
 
 use Moose;
 use MooseX::Singleton;
 
-use Term::ReadPassword;
-
 use App::LDAP::Command;
-use App::LDAP::Config;
-use App::LDAP::Utils;
-use App::LDAP::Connection;
+
+with 'App::LDAP::Role';
 
 sub run {
   my ($self,) = @_;
 
   App::LDAP::Config->read;
+  App::LDAP::Secret->read;
 
-  $self->handshake;
-
-  ($< == 0) ? $self->bindroot() : $self->binduser();
+  App::LDAP::Connection->new(
+      config()->{uri},
+      port       => config()->{port},
+      version    => config()->{ldap_version},
+      onerror    => 'die',
+  );
 
   App::LDAP::Command
       ->dispatch(@ARGV)
       ->new_with_options
+      ->prepare()
       ->run();
-}
-
-sub bindroot {
-  my ($self) = @_;
-  my $userpw = read_password("ldap admin password: ");
-  ldap->bind(
-      config->{rootbinddn},
-      password => $userpw
-  );
-}
-
-sub binduser {
-  my ($self) = @_;
-  my $userdn = find_user("uidNumber", $<)->dn;
-  my $userpw = read_password("your password: ");
-  ldap->bind($userdn, password => $userpw);
-}
-
-sub handshake {
-    my ($self,) = @_;
-    App::LDAP::Connection->new(
-        config->{uri},
-        port       => config->{port},
-        version    => config->{ldap_version},
-        onerror    => 'die',
-    );
 }
 
 __PACKAGE__->meta->make_immutable;

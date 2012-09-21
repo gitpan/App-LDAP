@@ -2,32 +2,37 @@ package App::LDAP::Command::Add::Ou;
 
 use Modern::Perl;
 
-use Namespace::Dispatch;
-
 use Moose;
 
-with 'MooseX::Getopt';
+with qw( App::LDAP::Role::Command
+         App::LDAP::Role::Bindable );
 
 has base => (
     is  => "rw",
     isa => "Str",
 );
 
-use App::LDAP::Utils;
 use App::LDAP::LDIF::OrgUnit;
 
 sub run {
     my ($self, ) = @_;
 
-    my $name = $ARGV[2] or die "no organization name specified";
+    my $ouname = $self->extra_argv->[2] or die "no organization name specified";
+
+    die "ou $ouname already exists" if App::LDAP::LDIF::OrgUnit->search(
+        base   => config()->{base},
+        scope  => config()->{scope},
+        filter => "ou=$ouname",
+    );
 
     my $ou = App::LDAP::LDIF::OrgUnit->new(
-        base => $self->base // config->{base},
-        name => $name,
+        base => $self->base // config()->{base},
+        ou   => $ouname,
     );
 
     $ou->save;
 
+    $ou;
 }
 
 

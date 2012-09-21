@@ -2,15 +2,13 @@ package App::LDAP::Command::Del;
 
 use Modern::Perl;
 
-use Namespace::Dispatch;
-
 use Moose;
 
-with 'MooseX::Getopt';
+with qw( App::LDAP::Role::Command
+         App::LDAP::Role::Stem );
 
 sub run {
-  my ($self,) = @_;
-  say "command->del";
+    my ($self, ) = @_;
 }
 
 __PACKAGE__->meta->make_immutable;

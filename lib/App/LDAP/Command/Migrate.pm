@@ -2,14 +2,13 @@ package App::LDAP::Command::Migrate;
 
 use Modern::Perl;
 
-use Namespace::Dispatch;
-
 use Moose;
 
-with 'MooseX::Getopt';
+with qw( App::LDAP::Role::Command
+         App::LDAP::Role::Stem );
 
 sub run {
-
+    my ($self, ) = @_;
 }
 
 __PACKAGE__->meta->make_immutable;

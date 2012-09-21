@@ -1,41 +1,23 @@
 package App::LDAP::LDIF::Host;
 
+use Modern::Perl;
+
 use Moose;
 
-with 'App::LDAP::LDIF';
+extends qw(
+    App::LDAP::ObjectClass::IpHost
+    App::LDAP::ObjectClass::Device
+    App::LDAP::LDIF
+);
 
 around BUILDARGS => sub {
     my $orig = shift;
     my $self = shift;
-
-    my $args = {@_};
-    my $base = $args->{base};
-    my $name = $args->{name};
-    my $ip   = $args->{ip};
-
-    $self->$orig(
-        dn           => "cn=$name,$base",
-        cn           => $name,
-        ipHostNumber => $ip,
-    );
-
+    push @_, ( dn => "cn=" . {@_}->{cn}[0] . "," . {@_}->{base} ) if grep /^base$/, @_;
+    $self->$orig(@_);
 };
 
-has dn => (
-    is       => "rw",
-    isa      => "Str",
-    required => 1,
-);
-
-has cn => (
-    is       => "rw",
-    isa      => "Str",
-    required => 1,
-);
-
-has objectClass => (
-    is      => "rw",
-    isa     => "ArrayRef[Str]",
+has '+objectClass' => (
     default => sub {
         [
             qw( top
@@ -44,24 +26,6 @@ has objectClass => (
         ]
     },
 );
-
-has ipHostNumber => (
-    is       => "rw",
-    isa      => "Str",
-    required => 1,
-);
-
-sub entry {
-    my ($self) = shift;
-    my $entry = Net::LDAP::Entry->new( $self->dn );
-
-    $entry->add($_ => $self->$_)
-      for qw( cn
-              objectClass
-              ipHostNumber );
-
-    $entry;
-}
 
 __PACKAGE__->meta->make_immutable;
 no Moose;
@@ -77,11 +41,15 @@ App::LDAP::LDIF::Host - the representation of hosts in LDAP
 =head1 SYNOPSIS
 
     my $host = App::LDAP::LDIF::Host->new(
-        base => $base,           # the OU (organization unit) which the host belongs to
-        name => $name,           # the host name
-        ip   => $ip,             # the ip of this host
+        base         => $base,               # the OU (organization unit) which the host belongs to
+        cn           => [$name1, $name2],    # the host name
+        ipHostNumber => $ipHostNumber,       # the ip of this host
     );
 
-    my $entry = $host->entry;    # get the host as a instance of Net::Ldap::Entry
+    my $entry = $host->entry;
+    # get the host as a instance of Net::Ldap::Entry
+
+    my $host = App::LDAP::LDIF::Host->new($entry)
+    # new from a Net::LDAP::Entry instance
 
 =cut

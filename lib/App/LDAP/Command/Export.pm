@@ -2,13 +2,10 @@ package App::LDAP::Command::Export;
 
 use Modern::Perl;
 
-use Namespace::Dispatch;
-
 use Moose;
 
-use App::LDAP::Utils;
-
-with 'MooseX::Getopt';
+with qw( App::LDAP::Role::Command
+         App::LDAP::Role::Bindable );
 
 has base => (
     is  => "rw",
@@ -28,16 +25,16 @@ has filter => (
 sub run {
     my ($self) = shift;
 
-    my $file = $ARGV[1];
+    my $file = $self->extra_argv->[1];
 
     if (! defined($file)) {
         say "you must give the file name to export";
         exit;
     }
 
-    my @entries = ldap->search(
-        base   => $self->base   // config->{base},
-        scope  => $self->scope  // config->{scope},
+    my @entries = ldap()->search(
+        base   => $self->base   // config()->{base},
+        scope  => $self->scope  // config()->{scope},
         filter => $self->filter // "objectClass=*",
     )->entries;
 

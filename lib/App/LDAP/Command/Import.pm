@@ -2,15 +2,12 @@ package App::LDAP::Command::Import;
 
 use Modern::Perl;
 
-use Namespace::Dispatch;
-
 use Moose;
 
-with 'MooseX::Getopt';
+with qw( App::LDAP::Role::Command
+         App::LDAP::Role::Bindable );
 
 use Net::LDAP::LDIF;
-
-use App::LDAP::Utils;
 
 sub run {
     my ($self) = shift;
@@ -30,7 +27,7 @@ sub process {
 
         while (!$ldif->eof) {
             my $entry = $ldif->read_entry;
-            my $msg = ldap->add($entry);
+            my $msg = ldap()->add($entry);
             warn $msg->error() if $msg->code;
         }
 

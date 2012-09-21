@@ -1,13 +1,19 @@
 use Modern::Perl;
 use Test::More;
 
-use App::LDAP::LDIF::User;
+BEGIN {
+    use_ok 'App::LDAP::LDIF::User';
+}
 
 my $user = App::LDAP::LDIF::User->new(
-    base     => "ou=People,dc=example,dc=com",
-    name     => "nobody",
-    password => "appldap0000",
-    id       => 1001,
+    base         => "ou=People,dc=example,dc=com",
+    uid          => "nobody",
+    userPassword => "appldap0000",
+    uidNumber    => 1001,
+    gidNumber    => 1001,
+    sn           => ["nobody"],
+    mail         => ['nobody@example.com'],
+    title        => "Engineer",
 );
 
 is_deeply (
@@ -18,13 +24,83 @@ is_deeply (
               objectClass
               userPassword
               shadowLastChange
+              shadowMin
               shadowMax
               shadowWarning
+              shadowInactive
+              shadowExpire
+              shadowFlag
               loginShell
               uidNumber
               gidNumber
-              homeDirectory )],
+              gecos
+              description
+              homeDirectory
+
+              sn
+              mail
+              audio
+              businessCategory
+              carLicense
+              departmentNumber
+              displayName
+              employeeNumber
+              employeeType
+              givenName
+              homePhone
+              homePostalAddress
+              initials
+              jpegPhoto
+              labeledURI
+              manager
+              mobile
+              o
+              pager
+              photo
+              roomNumber
+              secretary
+              userCertificate
+              x500uniqueIdentifier
+              preferredLanguage
+              userSMIMECertificate
+              userPKCS12
+
+              title
+              x121Address
+              registeredAddress
+              destinationIndicator
+              preferredDeliveryMethod
+              telexNumber
+              teletexTerminalIdentifier
+              telephoneNumber
+              internationaliSDNNumber
+              facsimileTelephoneNumber
+              street
+              postOfficeBox
+              postalCode
+              postalAddress
+              physicalDeliveryOfficeName
+              ou
+              st
+              l
+
+              seeAlso )],
     "ensure the attributes",
+);
+
+is_deeply (
+    [sort map { $_->name } grep { $_->is_required } App::LDAP::LDIF::User->meta->get_all_attributes],
+    [sort qw( objectClass
+              sn
+              cn
+              uid
+              uidNumber
+              gidNumber
+              homeDirectory
+
+              dn
+              userPassword )],
+    "make sure required attributes",
 );
 
 is (
@@ -39,15 +115,15 @@ is (
     "uid is name",
 );
 
-is (
+is_deeply (
     $user->cn,
-    "nobody",
+    ["nobody"],
     "cn is name",
 );
 
 is_deeply (
     $user->objectClass,
-    [qw(account posixAccount top shadowAccount)],
+    [qw(inetOrgPerson posixAccount top shadowAccount)],
     "objectClass has default",
 );
 
@@ -57,10 +133,15 @@ is (
     "password should be assigned",
 );
 
-is (
+ok (
     $user->shadowLastChange,
-    "11111",
     "shadowLastChange has default",
+);
+
+is (
+    $user->shadowMin,
+    0,
+    "shadowMin has default 0",
 );
 
 is (
@@ -81,28 +162,134 @@ is (
     "default shell should be bash",
 );
 
-is (
-    $user->entry->ldif,
-<<LDIF
+is_deeply (
+    $user->sn,
+    ["nobody"],
+    "user has sn",
+);
 
-dn: uid=nobody,ou=People,dc=example,dc=com
-uid: nobody
-cn: nobody
-objectClass: account
+is_deeply (
+    $user->mail,
+    ['nobody@example.com'],
+    "uesr has mail",
+);
+
+is (
+    $user->title,
+    "Engineer",
+    "extra attribute like title can be initialized",
+);
+
+like (
+    $user->entry->ldif,
+    qr{sn: nobody},
+    "sn has been exported",
+);
+
+like (
+    $user->entry->ldif,
+    qr{mail: nobody\@example.com},
+    "mail has been exported",
+);
+
+like (
+    $user->entry->ldif,
+    qr{title: Engineer},
+    "title has been exported",
+);
+
+like (
+    $user->entry->ldif,
+    qr{shadowLastChange:},
+    "shadowLastChange has been exported",
+);
+
+like (
+    $user->entry->ldif,
+    qr{uidNumber: 1001},
+    "uidNumber has been exported",
+);
+
+like (
+    $user->entry->ldif,
+    qr{gidNumber: 1001},
+    "gidNumber has been exported",
+);
+
+like (
+    $user->entry->ldif,
+    qr{title: Engineer},
+    "title has been exported",
+);
+
+use IO::String;
+
+my $ldif_string = IO::String->new(q{
+dn: uid=foo,ou=People,dc=ntucpel,dc=org
+uid: foo
+cn: foo
+sn: foo
+mail: foo@example.com
+objectClass: inetOrgPerson
 objectClass: posixAccount
 objectClass: top
 objectClass: shadowAccount
-userPassword: appldap0000
-shadowLastChange: 11111
+userPassword: {crypt}$6$PqFBTKAN$H9of7E7oITubjIQqWNIs3YrVkjVGgiUBzhWRc9G6EHvC1
+ VqVyHOJvf7nRoYeyCCVprZpH4otVQAHcxowOAmD91
+shadowLastChange: 22222
 shadowMax: 99999
 shadowWarning: 7
 loginShell: /bin/bash
-uidNumber: 1001
-gidNumber: 1001
-homeDirectory: /home/nobody
-LDIF
-,
-    "provide the same order as openldap utils",
+uidNumber: 2000
+gidNumber: 2000
+homeDirectory: /home/foo
+title: Engineer
+});
+
+my $entry = Net::LDAP::LDIF->new($ldif_string, "r", onerror => "die")->read_entry;
+
+my $new_from_entry = App::LDAP::LDIF::User->new($entry);
+
+is_deeply (
+    $new_from_entry->objectClass,
+    [qw( inetOrgPerson posixAccount top shadowAccount )],
+    "new from entry has the same objectClasses",
+);
+
+is (
+    $new_from_entry->uidNumber,
+    2000,
+    "uidNumber is correct",
+);
+
+is (
+    $new_from_entry->gidNumber,
+    2000,
+    "gidNumber is correct",
+);
+
+is_deeply (
+    $new_from_entry->sn,
+    ["foo"],
+    "sn is correct",
+);
+
+is_deeply (
+    $new_from_entry->mail,
+    ['foo@example.com'],
+    "mail is correct",
+);
+
+is (
+    $new_from_entry->title,
+    "Engineer",
+    "title is correct",
+);
+
+is (
+    $new_from_entry->shadowLastChange,
+    "22222",
+    "shadowLastChange is correct",
 );
 
 done_testing;

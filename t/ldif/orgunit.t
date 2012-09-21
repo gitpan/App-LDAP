@@ -1,11 +1,51 @@
 use Modern::Perl;
 use Test::More;
 
-use App::LDAP::LDIF::OrgUnit;
+BEGIN {
+    use_ok 'App::LDAP::LDIF::OrgUnit';
+}
+
+is_deeply (
+    [sort map {$_->name} App::LDAP::LDIF::OrgUnit->meta->get_all_attributes],
+    [sort qw( dn
+              objectClass
+
+              ou
+              userPassword
+              searchGuide
+              seeAlso
+              businessCategory
+              x121Address
+              registeredAddress
+              destinationIndicator
+              preferredDeliveryMethod
+              telexNumber
+              teletexTerminalIdentifier
+              telephoneNumber
+              internationaliSDNNumber
+              facsimileTelephoneNumber
+              street
+              postOfficeBox
+              postalCode
+              postalAddress
+              physicalDeliveryOfficeName
+              st
+              l
+              description )],
+    "make sure attributes",
+);
+
+is_deeply (
+    [sort map {$_->name} grep {$_->is_required} App::LDAP::LDIF::OrgUnit->meta->get_all_attributes],
+    [sort qw( dn
+              objectClass
+              ou )],
+    "make sure required attributes",
+);
 
 my $ou = App::LDAP::LDIF::OrgUnit->new(
     base => "dc=example,dc=com",
-    name => "People",
+    ou   => "People",
 );
 
 is (
@@ -20,14 +60,44 @@ is_deeply (
     "objectClass has default value",
 );
 
-is (
+like (
     $ou->entry->ldif,
-<<LDIF
+    qr{
+objectClass: organizationalUnit
+},
+    "objectClass has been exported",
+);
 
+like (
+    $ou->entry->ldif,
+    qr{
+ou: People
+},
+    "ou has been exported",
+);
+
+use IO::String;
+
+my $ldif_string = IO::String->new(q{
 dn: ou=People,dc=example,dc=com
 ou: People
 objectClass: organizationalUnit
-LDIF
+});
+
+my $entry = Net::LDAP::LDIF->new($ldif_string, "r", onerror => "die")->read_entry;
+
+my $new_from_entry = App::LDAP::LDIF::OrgUnit->new($entry);
+
+is (
+    $new_from_entry->ou,
+    "People",
+    "ou is read",
+);
+
+is_deeply (
+    $new_from_entry->objectClass,
+    ['organizationalUnit'],
+    "objectClass is read",
 );
 
 done_testing;

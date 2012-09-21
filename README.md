@@ -23,8 +23,11 @@ App::LDAP installation is straightforward. If your CPAN shell is set up,
 you should just be able to do
 
     $ cpan App::LDAP
+    
+You can also intall it into the [perlbrew](http://perlbrew.pl/) environment via
+[cpanm](https://github.com/miyagawa/cpanminus). Actually, this is the way used on developing App::LDAP.
 
-Download it, unpack it, then build it as per the usual:
+Of course, you can use the most basic way. Download it, unpack it, then build it as per the usual:
 
     $ perl Makefile.PL
     $ make && make test
@@ -32,9 +35,6 @@ Download it, unpack it, then build it as per the usual:
 Then install it:
 
     $ make install
-
-To make App::LDAP fully function, please load schemas attached in the package with "$ ldapadd -Y EXTERNAL -I LDAPI:///"
-which can configure LDAP server at runtime.
 
 ## DOCUMENTATION
 
@@ -46,35 +46,65 @@ to read the documentation online with your favorite pager.
 
 ## USAGE
 
-    Following usage example assume that root DN is ou=your,ou=domain.
+Assume your base is `dc=example,dc=com` which has been set up in `/etc/ldap/ldap.conf` or a acceptable place. and there
+are also some Organizational Units has been set up for *nss* and *pam* modules as following.
 
-    $ ldap add user shelling         # add posixAccount shelling to LDAP server
++ ou=people,dc=example,dc=com
++ ou=groups,dc=example,dc=com
++ ou=hosts,dc=exampke,dc=com
++ ou=sudoers,dc=example,dc=com
 
-    $ ldap del user shelling         # delete posixAccount shelling from LDAP server
+### initialize
 
-    $ ldap passwd                    # change password of yourself
+App::LDAP also requires some third-party schemas to function. These schemas are shipped with the project in the folder
+`schema/`. You can import them into the LDAP server via `$ ldapadd -Y EXTERNAL -I LDAPI:/// -f filename.ldif` or let
+App::LDAP do it for you even better.
 
-    $ sudo ldap passwd shelling      # using priviledge of root to change passwd of user shelling on LDAP server
-                                     # your ldap.conf and ldap.secret should provide settings identifying root 
-                                     # as cn=admin,ou=your,ou=domain
+    $ sudo ldap init                      # configure server to load schema/* at runtime
 
-    $ sudo ldap passwd -l shelling   # lock posixAccount shelling
+### add
 
-    $ ldap add host dns              # add host dns.your.domain
+After accomplishing all prerequisites, The schemas have been supported in `App::LDAP::LDIF::*` can be added via command
+line.
 
-    $ ldap add group maintainer      # add group maintainer
+    $ sudo ldap add user shelling         # add posixAccount uid=shelling,ou=people,dc=example,dc=com
 
-    $ ldap add sudoer shelling       # set shelling as SUDOer
-                                     # the ldap should have schema of SUDOers
+    $ sudo ldap add group maintainer      # add posixGroup cn=maintainer,ou=groups,dc=example,dc=com
 
-    $ ldap ls /                      # show subnodes of root DN
+    $ sudo ldap add sudoer shelling       # add sudoer cn=shelling,ou=sudoers,dc=example,dc=com
 
-    $ ldap import blah.ldif          # add content of blah.ldif into DB of ldap server
+    $ sudo ldap add host dns              # add host cn=dns,ou=hosts,dc=example,dc=com
 
-    $ ldap export -o out.ldif --base 'ou=People,dc=example,dc=com'
+    $ sudo ldap add ou test               # add organizational unit ou=test,dc=example,dc=com
 
-                                     # export content under ou=People,dc=example,dc=com
+### delete
 
+Every schema is also supported to be deleted from command line.
+
+    $ sudo ldap del user shelling         # delete posixAccount uid=shelling,ou=people,dc=example,dc=com
+
+    $ sudo ldap del group maintainer      # delete posixGroup cn=maintainer,dc=groups,dc=example,dc=com
+
+### password
+
+App::LDAP can guess your role from your UID, and help you to change your password.
+
+    $ ldap passwd                         # change password of yourself
+
+    $ sudo ldap passwd shelling           # using priviledge of ldap admin to change passwd of shelling
+
+    $ sudo ldap passwd shelling --lock    # lock shelling
+
+    $ sudo ldap passwd shelling --unlock  # unlock shelling
+
+### backup and restoring
+
+Doing backup and restoring are also supported.
+
+    $ sudo ldap import new.ldif           # add content of new.ldif
+
+    $ sudo ldap export all.ldif           # save all entries under dc=example,dc=com into all.ldif
+                                     
 ## LICENSE
 
 Copyright (C) 2010 shelling
