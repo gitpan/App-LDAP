@@ -29,7 +29,7 @@ requires:
   Moose: 0
   MooseX::Getopt: 0
   MooseX::Singleton: 0
-  Namespace::Dispatch: 0.04
+  Namespace::Dispatch: 0.05
   Net::LDAP: 0
   Sub::Delete: 0
   Term::Prompt: 0
@@ -38,4 +38,4 @@ requires:
 resources:
   license: http://opensource.org/licenses/mit-license.php
   repository: http://github.com/shelling/app-ldap
-version: 0.1.0
+version: 0.1.1

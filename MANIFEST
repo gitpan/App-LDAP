@@ -1,5 +1,6 @@
 bin/ldap
 Changes
+git.ldif
 inc/Module/Install.pm
 inc/Module/Install/AuthorTests.pm
 inc/Module/Install/Base.pm
@@ -91,7 +92,6 @@ t/objectclass/posixaccount.t
 t/objectclass/posixgroup.t
 t/objectclass/shadowaccount.t
 t/objectclass/top.t
-trendmicro.ldif
 xt/01_podspell.t
 xt/02_perlcritic.t
 xt/03_pod.t

@@ -1,0 +1,25 @@
+
+dn: uid=git,ou=People,dc=ntucpel,dc=org
+uid: git
+cn: git
+objectClass: account
+objectClass: posixAccount
+objectClass: top
+objectClass: shadowAccount
+userPassword: {crypt}!
+shadowLastChange: 11111
+shadowMax: 99999
+shadowWarning: 7
+loginShell: /bin/bash
+uidNumber: 901
+gidNumber: 901
+homeDirectory: /home/git
+
+
+dn: cn=git,ou=Group,dc=ntucpel,dc=org
+objectClass: posixGroup
+objectClass: top
+cn: git
+userPassword: {crypt}x
+gidNumber: 901
+
