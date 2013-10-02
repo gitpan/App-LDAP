@@ -1,6 +1,5 @@
 bin/ldap
 Changes
-git.ldif
 inc/Module/Install.pm
 inc/Module/Install/AuthorTests.pm
 inc/Module/Install/Base.pm

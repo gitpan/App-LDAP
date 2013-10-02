@@ -38,4 +38,4 @@ requires:
 resources:
   license: http://opensource.org/licenses/mit-license.php
   repository: http://github.com/shelling/app-ldap
-version: 0.1.1
+version: 0.1.2
